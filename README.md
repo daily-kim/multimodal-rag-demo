@@ -17,6 +17,106 @@ For local development the default adapter set is:
 - Basic observability with `trace_id`, app events, and recent job/chat/event views
 - Adapter skeletons for MySQL, S3-compatible storage, and Elasticsearch
 
+## System workflow
+
+### System overview
+
+```mermaid
+flowchart LR
+    User[Browser user]
+
+    subgraph App["Application"]
+        Web["Web runtime<br/>SSR pages<br/>auth/session<br/>upload/chat APIs<br/>monitoring"]
+        Worker["Worker runtime<br/>job polling<br/>normalize/render<br/>extract/embed<br/>vector upsert"]
+    end
+
+    subgraph Data["Data systems"]
+        DB["SQL DB<br/>users/spaces<br/>documents/pages/jobs<br/>chat sessions/messages<br/>traces/events"]
+        ObjectStore["Object storage<br/>original files<br/>normalized PDFs<br/>page images<br/>thumbnails/manifests"]
+        VectorDB["Vector DB<br/>page embeddings<br/>page metadata"]
+    end
+
+    subgraph Models["Model endpoints"]
+        Embedding["Embedding model<br/>page image embeddings<br/>query embeddings"]
+        Reranker["Optional reranker<br/>query-hit reranking"]
+        LLM["LLM<br/>answer generation<br/>streaming output"]
+    end
+
+    User --> Web
+    Web --> DB
+    Web --> ObjectStore
+    Web --> VectorDB
+    Web --> Embedding
+    Web --> Reranker
+    Web --> LLM
+
+    DB --> Worker
+    Worker --> DB
+    Worker --> ObjectStore
+    Worker --> VectorDB
+    Worker --> Embedding
+```
+
+Mermaid gets cramped when every object is listed inside the diagram, so the table below keeps the component list readable on GitHub.
+
+| System | Main objects |
+| --- | --- |
+| Web runtime | SSR pages, auth/session handling, upload endpoints, chat endpoints, SSE streaming, monitoring views |
+| Worker runtime | ingest job polling, PDF normalization, page rendering, text extraction, embedding calls, vector upsert |
+| SQL DB | users, spaces, documents, document pages, ingest jobs, chat sessions, chat messages, retrieval traces, app events |
+| Object storage | original uploads, normalized PDFs, page images, thumbnails, manifests, extracted text artifacts |
+| Vector DB | page embeddings, page metadata, retrieval records |
+| Embedding model | image embeddings for document pages, text/query embeddings for retrieval |
+| Reranker | optional reranking for retrieved candidates |
+| LLM | final answer generation and streamed response chunks |
+
+### Use case: document ingest
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Web as Web runtime
+    participant DB as SQL DB
+    participant Worker as Worker runtime
+    participant Object as Object storage
+    participant Embed as Embedding model
+    participant Vector as Vector DB
+
+    User->>Web: Upload document
+    Web->>DB: Create document + ingest job
+    Worker->>DB: Claim pending job
+    Worker->>Object: Store normalized PDF, page images, thumbnails
+    Worker->>Embed: Generate page embeddings
+    Worker->>Vector: Upsert page vectors
+    Worker->>DB: Save page metadata and mark document ready
+```
+
+### Use case: document chat
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Web as Web runtime
+    participant Embed as Embedding model
+    participant Vector as Vector DB
+    participant Rank as Optional reranker
+    participant Object as Object storage
+    participant LLM as LLM
+    participant DB as SQL DB
+
+    User->>Web: Select documents and send question
+    Web->>Embed: Embed query
+    Web->>Vector: Retrieve page hits
+    opt reranker enabled
+        Web->>Rank: Rerank retrieved candidates
+    end
+    Web->>Object: Resolve page images and thumbnails
+    Web->>LLM: Generate answer with page context
+    LLM-->>Web: Stream answer chunks
+    Web->>DB: Save chat messages, trace, and events
+    Web-->>User: Answer + evidence panel
+```
+
 ## Status
 
 - The local development profile is the primary validated path right now.
