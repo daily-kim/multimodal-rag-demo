@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section-header">
+  <div>
+    <p class="eyebrow">Overview</p>
+    <h1>{{ current_user.display_name }} workspace</h1>
+  </div>
+</section>
+<section class="stat-grid">
+  <article class="stat-card">
+    <span class="stat-label">Documents</span>
+    <strong>{{ documents|length }}</strong>
+  </article>
+  <article class="stat-card">
+    <span class="stat-label">Recent Jobs</span>
+    <strong>{{ jobs|length }}</strong>
+  </article>
+  <article class="stat-card">
+    <span class="stat-label">Recent Chats</span>
+    <strong>{{ chats|length }}</strong>
+  </article>
+</section>
+<section class="split-grid">
+  <article class="panel">
+    <div class="panel-head">
+      <h2>Recent documents</h2>
+      <a href="/documents">Open documents</a>
+    </div>
+    {% include "partials/document_list.html" %}
+  </article>
+  <article class="panel">
+    <div class="panel-head">
+      <h2>Recent ingestion jobs</h2>
+      <a href="/monitoring">Open monitoring</a>
+    </div>
+    {% include "partials/monitoring_job_table.html" %}
+  </article>
+</section>
+{% endblock %}

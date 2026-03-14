@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section-header">
+  <div>
+    <p class="eyebrow">Documents</p>
+    <h1>Upload and index documents</h1>
+  </div>
+</section>
+<section class="split-grid split-grid-wide">
+  <article class="panel">
+    <div class="panel-head">
+      <h2>Upload</h2>
+    </div>
+    {% include "partials/upload_form.html" %}
+  </article>
+  <article class="panel">
+    <div class="panel-head">
+      <h2>Document list</h2>
+      <button class="button button-muted" hx-get="/partials/documents/list" hx-target="#document-list" hx-swap="outerHTML">Refresh</button>
+    </div>
+    {% include "partials/document_list.html" %}
+  </article>
+</section>
+{% endblock %}

@@ -1,0 +1,22 @@
+<div id="document-list">
+  {% if documents %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Filename</th>
+        <th>Status</th>
+        <th>Pages</th>
+        <th>Created</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for document in documents %}
+        {% include "partials/document_row.html" %}
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">No uploaded documents yet.</div>
+  {% endif %}
+</div>

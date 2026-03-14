@@ -1,0 +1,27 @@
+<div id="monitoring-jobs">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Job</th>
+        <th>Document</th>
+        <th>Status</th>
+        <th>Step</th>
+        <th>Attempt</th>
+        <th>Trace</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for job in jobs %}
+      <tr>
+        <td><code>{{ job.id }}</code></td>
+        <td>{{ job.document.original_filename if job.document else job.document_id }}</td>
+        <td>{{ job.status }}</td>
+        <td>{{ job.step }}</td>
+        <td>{{ job.attempt_count }}</td>
+        <td><code>{{ job.trace_id }}</code></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+

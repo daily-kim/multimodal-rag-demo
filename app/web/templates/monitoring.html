@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section-header">
+  <div>
+    <p class="eyebrow">Monitoring</p>
+    <h1>Ingestion, retrieval, and generation traces</h1>
+  </div>
+</section>
+<section class="panel-stack">
+  <article class="panel">
+    <div class="panel-head">
+      <h2>Ingestion jobs</h2>
+      <button class="button button-muted" hx-get="/partials/monitoring/jobs/table" hx-target="#monitoring-jobs" hx-swap="outerHTML">Refresh</button>
+    </div>
+    {% include "partials/monitoring_job_table.html" %}
+  </article>
+  <article class="panel">
+    <div class="panel-head">
+      <h2>Chat traces</h2>
+      <button class="button button-muted" hx-get="/partials/monitoring/chats/table" hx-target="#monitoring-chats" hx-swap="outerHTML">Refresh</button>
+    </div>
+    {% include "partials/monitoring_chat_table.html" %}
+  </article>
+  <article class="panel">
+    <div class="panel-head">
+      <h2>Events</h2>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Severity</th>
+          <th>Type</th>
+          <th>Trace</th>
+          <th>Created</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for event in events %}
+        <tr>
+          <td>{{ event.severity }}</td>
+          <td>{{ event.event_type }}</td>
+          <td><code>{{ event.trace_id or "-" }}</code></td>
+          <td>{{ event.created_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+</section>
+{% endblock %}

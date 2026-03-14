@@ -1,0 +1,7 @@
+<form class="upload-form" hx-post="/api/documents/upload" hx-encoding="multipart/form-data" hx-target="#document-list" hx-swap="outerHTML">
+  <label class="upload-dropzone">
+    <span>Choose a file</span>
+    <input type="file" name="file" required />
+  </label>
+  <button class="button button-primary" type="submit">Upload</button>
+</form>

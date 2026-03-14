@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mm-rag-demo-web
+spec:
+  selector:
+    app: mm-rag-demo-web
+  ports:
+    - port: 80
+      targetPort: 8080
+

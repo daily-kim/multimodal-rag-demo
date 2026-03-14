@@ -1,0 +1,59 @@
+[project]
+name = "mm-rag-demo"
+version = "0.1.0"
+description = "Simple-demo multimodal RAG app built with FastAPI, HTMX, and LangGraph."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "alembic>=1.14.1",
+  "boto3>=1.37.14",
+  "elasticsearch>=8.18.0",
+  "fastapi>=0.115.11",
+  "httpx>=0.28.1",
+  "itsdangerous>=2.2.0",
+  "jinja2>=3.1.6",
+  "langgraph>=0.4.0",
+  "langchain-openai>=1.1.11",
+  "markdown>=3.8",
+  "numpy>=2.2.4",
+  "opentelemetry-api>=1.31.1",
+  "opentelemetry-exporter-otlp-proto-http>=1.31.1",
+  "opentelemetry-instrumentation-fastapi>=0.52b1",
+  "opentelemetry-instrumentation-httpx>=0.52b1",
+  "opentelemetry-instrumentation-sqlalchemy>=0.52b1",
+  "opentelemetry-sdk>=1.31.1",
+  "orjson>=3.10.16",
+  "pillow>=11.2.1",
+  "pydantic>=2.11.1",
+  "pydantic-settings>=2.8.1",
+  "pymupdf>=1.25.4",
+  "pymysql>=1.1.1",
+  "python-multipart>=0.0.20",
+  "reportlab>=4.3.1",
+  "sqlalchemy>=2.0.39",
+  "uvicorn>=0.34.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3.5",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3.5",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.uv]
+package = true

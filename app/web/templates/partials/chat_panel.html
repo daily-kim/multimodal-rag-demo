@@ -1,0 +1,97 @@
+<section id="chat-panel" class="panel chat-stage {% if messages %}chat-stage-live{% else %}chat-stage-empty{% endif %}">
+  <div class="chat-stage-head">
+    <div class="chat-stage-title">
+      <p class="eyebrow">Assistant</p>
+      <h2>{{ chat_session.title or "New chat" }}</h2>
+      <p class="muted">
+        {% if messages %}
+        {{ messages | length }} message{% if messages | length != 1 %}s{% endif %}
+        {% else %}
+        Select documents and send a prompt to start the conversation here.
+        {% endif %}
+      </p>
+    </div>
+    <div class="chat-stage-meta">
+      <small class="muted">Each assistant answer keeps its own evidence and trace.</small>
+    </div>
+  </div>
+
+  <div class="chat-thread-wrap {% if messages %}chat-thread-live{% else %}chat-thread-empty{% endif %}">
+    <div class="chat-thread">
+      {% if messages %}
+        {% for message in messages %}
+          {% include "partials/chat_message.html" %}
+        {% endfor %}
+      {% else %}
+        <div class="empty-state chat-empty-state">
+          <strong>No messages yet.</strong>
+          <p>Pick one or more documents on the left, then send a prompt below.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <form
+    id="chat-form"
+    class="chat-compose-form"
+    method="post"
+    action="/api/chat/sessions/{{ chat_session.id }}/messages"
+    hx-post="/api/chat/sessions/{{ chat_session.id }}/messages"
+    hx-target="#chat-panel"
+    hx-swap="outerHTML"
+    data-stream-init-url="/api/chat/sessions/{{ chat_session.id }}/messages/stream-init"
+    data-panel-url="/partials/chat/{{ chat_session.id }}/messages"
+    data-session-id="{{ chat_session.id }}"
+  >
+    <details class="chat-settings">
+      <summary>Advanced retrieval settings</summary>
+      <div class="config-grid compact-config-grid">
+        <label>
+          <span>top_k</span>
+          <input type="number" name="top_k" min="1" max="50" value="{{ retrieval_defaults.top_k }}" />
+        </label>
+        <label>
+          <span>rerank_top_n</span>
+          <input type="number" name="rerank_top_n" min="1" max="50" value="{{ retrieval_defaults.rerank_top_n }}" />
+        </label>
+        <label>
+          <span>max_images_to_llm</span>
+          <input type="number" name="max_images_to_llm" min="1" max="12" value="{{ retrieval_defaults.max_images_to_llm }}" />
+        </label>
+        <label>
+          <span>neighbor_window_n</span>
+          <input type="number" name="neighbor_window_n" min="0" max="5" value="{{ retrieval_defaults.neighbor_window_n }}" />
+        </label>
+        <label>
+          <span>retrieval_mode</span>
+          <select name="retrieval_mode">
+            <option value="pages_only" {% if retrieval_defaults.retrieval_mode.value == "pages_only" %}selected{% endif %}>pages_only</option>
+            <option value="with_neighbors" {% if retrieval_defaults.retrieval_mode.value == "with_neighbors" %}selected{% endif %}>with_neighbors</option>
+          </select>
+        </label>
+        <label class="toggle">
+          <span>reranker</span>
+          <input type="checkbox" name="rerank_enabled" {% if retrieval_defaults.rerank_enabled %}checked{% endif %} />
+        </label>
+      </div>
+    </details>
+
+    <label class="composer-field">
+      <span class="sr-only">Prompt</span>
+      <textarea
+        class="composer-textarea"
+        name="message"
+        rows="1"
+        placeholder="Ask about the selected documents. Enter to send, Shift+Enter for a new line."
+        data-autosize
+      ></textarea>
+    </label>
+
+    <div class="compose-footer">
+      <small class="muted">Selected document checkboxes stay in the left panel for the current chat.</small>
+      <button class="button button-primary compose-submit" type="submit">
+        <span class="button-label">Send prompt</span>
+      </button>
+    </div>
+  </form>
+</section>

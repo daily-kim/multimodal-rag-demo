@@ -1,0 +1,33 @@
+<section class="evidence-block">
+  <div class="evidence-list">
+    {% for item in evidence_items %}
+    <article class="evidence-row">
+      <div class="evidence-thumb">
+        {% if item.thumbnail_path %}
+        <img src="/api/documents/{{ item.document_id }}/pages/{{ item.page_id }}/thumbnail" alt="evidence thumbnail" />
+        {% else %}
+        <div class="evidence-thumb-placeholder">no preview</div>
+        {% endif %}
+      </div>
+      <div class="evidence-meta">
+        <strong>{{ item.document_name }}</strong>
+        <span>page {{ item.page_no }}</span>
+        <div class="evidence-score-row">
+          <small>retrieval={{ "%.3f"|format(item.retrieval_score or 0) }}</small>
+          {% if item.rerank_score is not none %}
+          <small>rerank={{ "%.3f"|format(item.rerank_score) }}</small>
+          {% endif %}
+        </div>
+        {% if item.context_text %}
+        <div class="evidence-hover-wrap">
+          <span class="evidence-hover-chip" tabindex="0">Text preview</span>
+          <div class="evidence-hover-card" role="tooltip">
+            {{ item.context_text }}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>

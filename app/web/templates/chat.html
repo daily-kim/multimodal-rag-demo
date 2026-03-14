@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="chat-page-header">
+  <div class="chat-page-copy">
+    <p class="eyebrow">Chat Workspace</p>
+    <h1>Document-grounded multimodal chat</h1>
+    <p class="muted">Move between document selection, saved chats, and evidence review from one screen.</p>
+    <div class="chat-page-badges">
+      <span class="chat-page-badge">Selected docs {{ selected_document_ids | length }}</span>
+      <span class="chat-page-badge">Saved chats {{ chat_sessions | length }}</span>
+    </div>
+  </div>
+</section>
+<section class="chat-app-layout chat-app-workspace">
+  <aside class="panel chat-sidebar">
+    <div class="chat-sidebar-top">
+      <div class="panel-head">
+        <div>
+          <h2>Documents and chats</h2>
+          <p class="muted">Choose source documents, then jump back into any saved chat.</p>
+        </div>
+        <a href="/documents">Manage docs</a>
+      </div>
+      <div class="chat-sidebar-actions">
+        <a class="button button-primary chat-new-button" href="/chat?new=1">New chat</a>
+      </div>
+    </div>
+
+    <section class="chat-sidebar-section chat-documents-section">
+      <div class="chat-section-head">
+        <div>
+          <h3>Included documents</h3>
+          <p class="muted">Select the documents that should be available to this chat.</p>
+        </div>
+      </div>
+      <div class="document-picker chat-document-picker">
+        {% for document in documents %}
+        <label class="picker-row">
+          <input form="chat-form" type="checkbox" name="selected_document_ids" value="{{ document.id }}" {% if document.id in selected_document_ids %}checked{% endif %} />
+          <span class="picker-name" title="{{ document.original_filename }}">{{ document.original_filename }}</span>
+          <small class="status-badge status-{{ document.status }}">{{ document.status }}</small>
+        </label>
+        {% else %}
+        <div class="empty-state chat-empty-mini">
+          <strong>No documents yet.</strong>
+          <p>Upload a document first, then come back here to include it in chat.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="chat-sidebar-section chat-history-section">
+      <div class="panel-head chat-history-head">
+        <div>
+          <h3>Saved chats</h3>
+          <p class="muted">Reopen a previous session and continue where you left off.</p>
+        </div>
+        <form method="post" action="/api/chat/sessions/clear" onsubmit="return confirm('Delete all saved chats?');">
+          <button class="button button-ghost chat-clear-button" type="submit">Clear all</button>
+        </form>
+      </div>
+      <div class="chat-session-list">
+        {% for session in chat_sessions %}
+        <article class="chat-session-item {% if session.id == chat_session.id %}is-active{% endif %}">
+          <a
+            class="chat-session-link"
+            href="/chat?session_id={{ session.id }}"
+          >
+            <strong>{{ session.title or "New chat" }}</strong>
+            <small class="muted">{{ session.updated_at.strftime("%Y-%m-%d %H:%M") }}</small>
+          </a>
+          <form
+            method="post"
+            action="/api/chat/sessions/{{ session.id }}/delete"
+            class="chat-session-delete-form"
+            onsubmit="return confirm('Delete this chat?');"
+          >
+            <input type="hidden" name="return_session_id" value="{{ chat_session.id }}" />
+            <button class="button button-ghost chat-session-delete" type="submit">Delete</button>
+          </form>
+        </article>
+        {% else %}
+        <div class="empty-state chat-empty-mini">
+          <strong>No saved chats yet.</strong>
+          <p>Send your first prompt and this list will start building up.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+  </aside>
+  {% include "partials/chat_panel.html" %}
+</section>
+{% endblock %}

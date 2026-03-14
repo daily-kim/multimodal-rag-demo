@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mm-rag-demo-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mm-rag-demo-web
+  template:
+    metadata:
+      labels:
+        app: mm-rag-demo-web
+    spec:
+      containers:
+        - name: web
+          image: mm-rag-demo/web:latest
+          ports:
+            - containerPort: 8080
+

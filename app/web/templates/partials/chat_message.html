@@ -1,0 +1,36 @@
+{% set role_name = message.role.value if message.role.value is defined else message.role %}
+<article class="chat-message role-{{ role_name }}">
+  <div class="chat-avatar">
+    {% if role_name == "user" %}ME{% elif role_name == "assistant" %}AI{% else %}SYS{% endif %}
+  </div>
+  <div class="chat-card">
+    <header class="chat-message-head">
+      <strong>{% if role_name == "user" %}You{% elif role_name == "assistant" %}Assistant{% else %}System{% endif %}</strong>
+      {% if message.trace_id %}
+      <code class="trace-chip" title="{{ message.trace_id }}">{{ message.trace_id[:12] }}...</code>
+      {% endif %}
+    </header>
+    <div class="chat-bubble{% if role_name == 'assistant' %} chat-rich{% endif %}">{% if role_name == "assistant" %}{{ message.content | markdown | safe }}{% else %}{{ message.content }}{% endif %}</div>
+    {% if role_name == "assistant" and message.trace_id %}
+    <section
+      class="message-evidence-shell"
+      x-data="{ open: false, loaded: false }"
+    >
+      <button
+        class="button button-muted button-evidence"
+        type="button"
+        @click="
+          open = !open;
+          if (open && !loaded) {
+            htmx.ajax('GET', '/partials/chat/{{ chat_session.id }}/evidence/{{ message.trace_id }}', {target: '#evidence-{{ message.id }}', swap: 'innerHTML'});
+            loaded = true;
+          }
+        "
+      >
+        View evidence
+      </button>
+      <div id="evidence-{{ message.id }}" class="message-evidence-body" x-show="open" x-cloak></div>
+    </section>
+    {% endif %}
+  </div>
+</article>

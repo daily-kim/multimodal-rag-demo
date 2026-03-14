@@ -1,0 +1,25 @@
+<div id="monitoring-chats">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Trace</th>
+        <th>Query</th>
+        <th>top_k</th>
+        <th>Images</th>
+        <th>Latency</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for trace in chat_traces %}
+      <tr>
+        <td><code>{{ trace.id }}</code></td>
+        <td>{{ trace.query_text }}</td>
+        <td>{{ trace.top_k }}</td>
+        <td>{{ trace.max_images_to_llm }}</td>
+        <td>{{ trace.latency_ms_total or "-" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section-header">
+  <div>
+    <p class="eyebrow">Document Detail</p>
+    <h1>{{ document.original_filename }}</h1>
+    <p class="muted">Status: {{ document.status }} | Pages: {{ document.total_pages or 0 }}</p>
+  </div>
+</section>
+<section class="panel">
+  <div class="detail-grid">
+    <div>
+      <span class="meta-label">SHA256</span>
+      <code>{{ document.sha256 }}</code>
+    </div>
+    <div>
+      <span class="meta-label">MIME</span>
+      <span>{{ document.mime_type }}</span>
+    </div>
+    <div>
+      <span class="meta-label">Created</span>
+      <span>{{ document.created_at }}</span>
+    </div>
+  </div>
+</section>
+<section class="panel">
+  <div class="panel-head">
+    <h2>Pages</h2>
+  </div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Thumb</th>
+        <th>Page</th>
+        <th>Extracted Text</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for page in document.pages %}
+      <tr>
+        <td>
+          {% if page.storage_thumbnail_path %}
+          <img class="thumb" src="/api/documents/{{ document.id }}/pages/{{ page.id }}/thumbnail" alt="thumb" />
+          {% endif %}
+        </td>
+        <td>{{ page.page_no }}</td>
+        <td><pre class="prewrap">{{ page.extracted_text or "-" }}</pre></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mm-rag-demo-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mm-rag-demo-worker
+  template:
+    metadata:
+      labels:
+        app: mm-rag-demo-worker
+    spec:
+      containers:
+        - name: worker
+          image: mm-rag-demo/worker:latest
+

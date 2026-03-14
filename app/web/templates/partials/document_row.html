@@ -1,0 +1,14 @@
+<tr id="document-row-{{ document.id }}">
+  <td>
+    <a href="/documents/{{ document.id }}">{{ document.original_filename }}</a>
+    {% if document.error_message %}
+    <p class="muted">{{ document.error_message }}</p>
+    {% endif %}
+  </td>
+  <td><span class="status-badge status-{{ document.status }}">{{ document.status }}</span></td>
+  <td>{{ document.total_pages or "-" }}</td>
+  <td>{{ document.created_at }}</td>
+  <td class="actions-cell">
+    <button class="button button-danger" hx-delete="/api/documents/{{ document.id }}" hx-target="#document-list" hx-swap="outerHTML">Delete</button>
+  </td>
+</tr>
