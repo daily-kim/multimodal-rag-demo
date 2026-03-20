@@ -58,3 +58,55 @@ def test_openrouter_langchain_adapter_streams_chunks(monkeypatch) -> None:
     chunks = list(client.chat_stream([LLMMessage(role="user", content="Say hi")]))
 
     assert chunks == ["hello ", "stream"]
+
+
+def test_openrouter_langchain_adapter_attaches_images_to_last_user_message(monkeypatch) -> None:
+    monkeypatch.setattr("app.adapters.model_clients.llm_openai.ChatOpenAI", _FakeChatOpenAI)
+    monkeypatch.setattr("app.adapters.model_clients.llm_openai.file_to_data_url", lambda path: f"data://{path}")
+    client = OpenAICompatibleLLMClient(
+        api_base="https://openrouter.ai/api/v1",
+        api_key="test-key",
+        model="openrouter/healer-alpha",
+        app_name="mm-rag-demo",
+    )
+
+    client.chat(
+        [
+            LLMMessage(role="system", content="You are helpful."),
+            LLMMessage(role="assistant", content="Earlier answer."),
+            LLMMessage(role="user", content="Use the provided pages."),
+        ],
+        images=["/tmp/page-1.png", "/tmp/page-2.png"],
+    )
+
+    payload_messages, _kwargs = client._get_chat_model().invocations[-1]
+    last_message = payload_messages[-1]
+    assert isinstance(last_message.content, list)
+    assert last_message.content[0] == {"type": "text", "text": "Use the provided pages."}
+    assert last_message.content[1:] == [
+        {"type": "image_url", "image_url": {"url": "data:///tmp/page-1.png"}},
+        {"type": "image_url", "image_url": {"url": "data:///tmp/page-2.png"}},
+    ]
+
+
+def test_openrouter_langchain_adapter_uses_remote_image_urls_as_is(monkeypatch) -> None:
+    monkeypatch.setattr("app.adapters.model_clients.llm_openai.ChatOpenAI", _FakeChatOpenAI)
+    monkeypatch.setattr("app.adapters.model_clients.llm_openai.file_to_data_url", lambda path: f"data://{path}")
+    client = OpenAICompatibleLLMClient(
+        api_base="https://openrouter.ai/api/v1",
+        api_key="test-key",
+        model="openrouter/healer-alpha",
+        app_name="mm-rag-demo",
+    )
+
+    client.chat(
+        [LLMMessage(role="user", content="Use this image url.")],
+        images=["https://s3.example.com/presigned-object?token=abc"],
+    )
+
+    payload_messages, _kwargs = client._get_chat_model().invocations[-1]
+    last_message = payload_messages[-1]
+    assert isinstance(last_message.content, list)
+    assert last_message.content[1:] == [
+        {"type": "image_url", "image_url": {"url": "https://s3.example.com/presigned-object?token=abc"}},
+    ]

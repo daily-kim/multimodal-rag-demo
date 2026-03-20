@@ -52,6 +52,12 @@ class OpenAICompatibleLLMClient(LLMClient):
             return "".join(parts)
         return str(content)
 
+    @staticmethod
+    def _image_reference_to_url(reference: str) -> str:
+        if reference.startswith(("http://", "https://", "data:")):
+            return reference
+        return file_to_data_url(reference)
+
     def _to_langchain_messages(self, messages: list[LLMMessage], images: list[str] | None = None) -> list[SystemMessage | HumanMessage | AIMessage]:
         payload_messages: list[SystemMessage | HumanMessage | AIMessage] = []
         last_user_index = max((index for index, message in enumerate(messages) if message.role == "user"), default=-1)
@@ -60,7 +66,7 @@ class OpenAICompatibleLLMClient(LLMClient):
             if images and index == last_user_index and message.role == "user":
                 content = [
                     {"type": "text", "text": message.content},
-                    *({"type": "image_url", "image_url": {"url": file_to_data_url(path)}} for path in images),
+                    *({"type": "image_url", "image_url": {"url": self._image_reference_to_url(path)}} for path in images),
                 ]
 
             if message.role == "system":

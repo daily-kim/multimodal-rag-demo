@@ -15,15 +15,17 @@ router = APIRouter(prefix="/api", tags=["api-chat"])
 
 
 def _parse_chat_payload(request: Request, data: dict) -> ChatRequest:
+    settings = request.app.state.shared.settings
+    defaults = RetrievalConfig.from_settings(settings)
     if "retrieval_config" in data:
         return ChatRequest.model_validate(data)
     retrieval = RetrievalConfig(
-        top_k=int(data.get("top_k", 12)),
-        rerank_enabled=str(data.get("rerank_enabled", "true")).lower() in {"1", "true", "on", "yes"},
-        rerank_top_n=int(data.get("rerank_top_n", 6)),
-        max_images_to_llm=int(data.get("max_images_to_llm", 6)),
-        retrieval_mode=data.get("retrieval_mode", "with_neighbors"),
-        neighbor_window_n=int(data.get("neighbor_window_n", 1)),
+        top_k=int(data.get("top_k", defaults.top_k)),
+        rerank_enabled=str(data.get("rerank_enabled", str(defaults.rerank_enabled))).lower() in {"1", "true", "on", "yes"},
+        rerank_top_n=int(data.get("rerank_top_n", defaults.rerank_top_n)),
+        max_images_to_llm=int(data.get("max_images_to_llm", defaults.max_images_to_llm)),
+        retrieval_mode=data.get("retrieval_mode", defaults.retrieval_mode.value),
+        neighbor_window_n=int(data.get("neighbor_window_n", defaults.neighbor_window_n)),
     )
     selected = data.get("selected_document_ids", [])
     if isinstance(selected, str):
