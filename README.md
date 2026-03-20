@@ -154,7 +154,7 @@ AUTH_BYPASS=true
 APP_DEBUG=true
 ```
 
-6. Initialize the database
+6. Initialize the database schema (runs `alembic upgrade head`)
 
 ```bash
 python scripts/init_db.py
@@ -217,7 +217,7 @@ Python `3.11` or `3.12` is recommended. The project can run on newer Python vers
 
 - Validate the full production profile end to end with `MySQL + S3-compatible storage + Elasticsearch`.
 - Smoke-test the production GitHub OAuth flow against a real shared environment.
-- Create and pin the first Alembic revision, then verify the migration workflow from a clean database.
+- Verify the Alembic migration workflow from a clean database on both SQLite and MySQL.
 - Validate LibreOffice-based `doc/docx/ppt/pptx` conversion on a clean Linux host.
 - Smoke-test the Dockerfiles, local compose setup, and Kubernetes manifests in a fresh environment.
 - Harden and verify streaming behavior for long-running generations, reconnects, and interrupted SSE sessions.

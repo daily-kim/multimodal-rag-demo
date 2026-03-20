@@ -31,6 +31,12 @@ class StorageService:
     def local_path(self, path: str) -> str | None:
         return self.object_store.open_local_path(path)
 
+    def llm_image_input(self, path: str, *, presigned_expires_in: int = 900) -> str | None:
+        presigned = self.object_store.presigned_url(path, expires_in=presigned_expires_in)
+        if presigned:
+            return presigned
+        return self.object_store.open_local_path(path)
+
     def delete_document_prefix(self, space_id: str, document_id: str) -> None:
         prefix = self.document_prefix(space_id, document_id)
         delete_prefix = getattr(self.object_store, "delete_prefix", None)
@@ -43,4 +49,3 @@ class StorageService:
         target = Path(path)
         target.parent.mkdir(parents=True, exist_ok=True)
         return target
-

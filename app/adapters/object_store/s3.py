@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 
 import boto3
@@ -17,8 +18,11 @@ class S3ObjectStore(ObjectStore):
         secret_key: str,
         region: str,
         force_path_style: bool,
+        local_cache_dir: str | Path = ".cache/s3-object-store",
     ) -> None:
         self.bucket = bucket
+        self.local_cache_dir = Path(local_cache_dir).resolve()
+        self.local_cache_dir.mkdir(parents=True, exist_ok=True)
         self.client = boto3.client(
             "s3",
             endpoint_url=endpoint_url or None,
@@ -60,6 +64,18 @@ class S3ObjectStore(ObjectStore):
             ExpiresIn=expires_in,
         )
 
-    def open_local_path(self, path: str) -> str | None:
-        return None
+    def _cache_path(self, path: str) -> Path:
+        suffix = Path(path).suffix
+        hashed_name = hashlib.sha256(path.encode("utf-8")).hexdigest()
+        return self.local_cache_dir / f"{hashed_name}{suffix}"
 
+    def open_local_path(self, path: str) -> str | None:
+        cached = self._cache_path(path)
+        if cached.exists():
+            return str(cached)
+        cached.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            self.client.download_file(self.bucket, path, str(cached))
+        except Exception:
+            return None
+        return str(cached)

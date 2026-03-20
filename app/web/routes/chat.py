@@ -31,7 +31,7 @@ async def chat_messages_partial(
     traces = TraceRepository(db)
     session = chats.get_session_in_space(current.space_id, session_id)
     messages = chats.list_messages(session_id) if session else []
-    retrieval_defaults = RetrievalConfig()
+    retrieval_defaults = RetrievalConfig.from_settings(request.app.state.shared.settings)
     for message in reversed(messages):
         if not message.retrieval_config_json:
             continue

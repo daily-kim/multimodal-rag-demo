@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -19,6 +20,17 @@ class RetrievalConfig(BaseModel):
     @classmethod
     def _validate_rerank_top_n(cls, value: int) -> int:
         return max(1, value)
+
+    @classmethod
+    def from_settings(cls, settings: Any) -> "RetrievalConfig":
+        return cls(
+            top_k=settings.rag_default_top_k,
+            rerank_enabled=settings.rag_default_rerank_enabled,
+            rerank_top_n=settings.rag_default_rerank_top_n,
+            max_images_to_llm=settings.rag_default_max_images_to_llm,
+            retrieval_mode=settings.rag_default_retrieval_mode,
+            neighbor_window_n=settings.rag_default_neighbor_window_n,
+        )
 
 
 class ChatRequest(BaseModel):

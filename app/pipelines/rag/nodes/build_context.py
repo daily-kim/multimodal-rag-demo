@@ -18,15 +18,16 @@ def make_build_context_node(storage: StorageService):
         context_lines: list[str] = []
         evidence_items: list[dict[str, object]] = []
         for hit in final_hits:
-            local_image_path = storage.local_path(hit.page.storage_image_path)
-            if local_image_path:
-                context_image_paths.append(local_image_path)
+            image_input = storage.llm_image_input(hit.page.storage_image_path)
+            if image_input:
+                context_image_paths.append(image_input)
             context_text = (hit.page.extracted_text or "").strip()
             context_lines.append(
                 f"- {hit.document.original_filename} page {hit.page.page_no}: {context_text[:400]}"
             )
             evidence_items.append(hit.to_trace_dict())
         history_messages = state.get("chat_history_messages", [])
+        retrieved_context = "Retrieved page context for this answer:\n" + "\n".join(context_lines) if context_lines else "No retrieved text context."
         llm_messages = [
             LLMMessage(
                 role="system",
@@ -34,12 +35,9 @@ def make_build_context_node(storage: StorageService):
                     "You are an internal multimodal RAG assistant. "
                     "Answer based on the provided document pages and be explicit when evidence is weak. "
                     "Do not dump or quote the raw retrieved context verbatim in the answer body. "
-                    "The UI shows evidence separately, so answer naturally and keep the response focused on the user's question."
+                    "The UI shows evidence separately, so answer naturally and keep the response focused on the user's question.\n\n"
+                    f"{retrieved_context}"
                 ),
-            ),
-            LLMMessage(
-                role="system",
-                content="Retrieved page context for this answer:\n" + "\n".join(context_lines) if context_lines else "No retrieved text context.",
             ),
             *history_messages,
             LLMMessage(

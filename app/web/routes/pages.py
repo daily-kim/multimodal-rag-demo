@@ -102,7 +102,7 @@ async def chat_page(
     elif all(item.id != session.id for item in chat_sessions):
         chat_sessions = [session, *chat_sessions]
     messages = chat_service.list_messages(current, session.id)
-    retrieval_defaults = RetrievalConfig()
+    retrieval_defaults = RetrievalConfig.from_settings(request.app.state.shared.settings)
     for message in reversed(messages):
         if not getattr(message, "retrieval_config_json", None):
             continue
